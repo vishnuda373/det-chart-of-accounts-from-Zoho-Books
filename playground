@@ -1,0 +1,42 @@
+void Books.getCOA()
+{
+	mp = Map();
+	org = "xxxxxxxx";
+	if(!isNull(org))
+	{
+		mm = Map();
+		resp = invokeurl
+		[
+			url :"https://books.zoho.com/api/v3/chartofaccounts?organization_id=" + org
+			type :GET
+			parameters:mm
+			connection:"zoho_books"
+		];
+		//info resp;
+		resp_list = resp.get("chartofaccounts");
+		//info resp_list;
+		//info resp_list.Size();
+		for each  rec in resp_list
+		{
+			ft = Chart_Of_Accounts[Zoho_Books_ID == rec.get("account_id")].count(ID);
+			if(ft == 0)
+			{
+				insert into Chart_Of_Accounts
+				[
+					Added_User=zoho.loginuser
+					Account_Name=ifnull(rec.get("account_name"),"")
+					Account_Type=ifnull(rec.get("account_type"),"")
+					Zoho_Books_ID=ifnull(rec.get("account_id"),"")
+				]
+			}
+			else
+			{
+				ch = Chart_Of_Accounts[Zoho_Books_ID == rec.get("account_id")];
+				ch.Account_Type=ifnull(rec.get("account_type"),"");
+				ch.Account_Name=ifnull(rec.get("account_name"),"");
+				ch.Zoho_Books_ID=rec.get("account_id");
+				info ch.Account_Name;
+			}
+		}
+	}
+}
